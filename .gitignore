@@ -1,0 +1,25 @@
+# Node
+node_modules/
+
+# Expo
+.expo/
+
+# Build
+ios/build/
+android/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+
+# Xcode
+*.xcworkspace
+*.xcuserdata/
+*.xcuserstate
+
+# Generated
+*.log
