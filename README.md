@@ -2,6 +2,10 @@
 
 TempoTiles is a mobile interval training builder that turns natural language into draggable workout blocks. It supports grouped sets, edit-in-place, voice input (when using cloud parsing), and a runner screen with a countdown, big timer, and audio cues.
 
+# Product Demo
+
+https://github.com/user-attachments/assets/e50ce788-6370-4a67-9008-831001efe87b
+
 ## Features
 - Natural language to intervals with AI parsing (cloud or local)
 - Grouped sets with drill‑down editing
@@ -25,4 +29,5 @@ pod install
 
 ## Notes
 - On-device model integration is in progress.
+
 - Voice input requires OpenAI API credentials.
