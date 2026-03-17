@@ -22,7 +22,11 @@ import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { parseIntervalsAI, transcribeAudio } from "./src/openai";
-import { ensureOnDeviceModel, runOnDeviceParse } from "./src/localModel";
+import {
+  ensureOnDeviceModel,
+  isOnDeviceModuleAvailable,
+  runOnDeviceParse,
+} from "./src/localModel";
 
 const EXAMPLE =
   "10 minutes jog followed by 8 sets of 30 seconds sprint followed by 90 seconds jog, finishing with a 10 minute jog";
@@ -86,7 +90,7 @@ export default function App() {
   const [localBaseUrl, setLocalBaseUrl] = useState("http://localhost:11434/v1");
   const [localModel, setLocalModel] = useState("llama3.1:8b-instruct");
   const [useOnDeviceModel, setUseOnDeviceModel] = useState(true);
-  const [isModelReady, setIsModelReady] = useState(false);
+  const [isModelReady, setIsModelReady] = useState(isOnDeviceModuleAvailable);
   const [isDownloadingModel, setIsDownloadingModel] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -223,6 +227,10 @@ export default function App() {
 
   const downloadOnDeviceModel = async () => {
     setError(null);
+    if (!isOnDeviceModuleAvailable) {
+      setIsModelReady(true);
+      return;
+    }
     setIsDownloadingModel(true);
     try {
       await ensureOnDeviceModel(LOCAL_MODEL_URL);
@@ -259,6 +267,10 @@ export default function App() {
     setError(null);
     if (!text.trim()) {
       setBlocks([]);
+      return;
+    }
+    if (useOnDeviceModel && !isOnDeviceModuleAvailable) {
+      setBlocks(parseIntervals(text));
       return;
     }
     if (useOnDeviceModel && !isModelReady) {
@@ -655,7 +667,7 @@ export default function App() {
           ListHeaderComponent={
             <>
               <View style={styles.hero}>
-                <Text style={styles.title}>Interval Builder</Text>
+                <Text style={styles.title}>TempoTiles</Text>
                 <Text style={styles.subtitle}>
                   Describe your workout in plain language and turn it into draggable
                   intervals.
@@ -1017,7 +1029,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 24,
-    paddingTop: 28,
+    paddingTop: 72,
     paddingBottom: 96,
     gap: 24,
   },

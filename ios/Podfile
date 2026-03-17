@@ -2,6 +2,7 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
 
 require 'json'
+require 'fileutils'
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
 
 def ccache_enabled?(podfile_properties)
@@ -59,5 +60,25 @@ target 'IntervalNLP' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'EXConstants'
+
+      target.build_phases.each do |phase|
+        next unless phase.respond_to?(:name)
+        next unless phase.name == '[CP-User] Generate app.config for prebuilt Constants.manifest'
+
+        phase.shell_script = 'bash -l -c "\\\"$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh\\\""'
+      end
+    end
+
+    scripts_src = File.join(Pod::Config.instance.installation_root, '..', 'scripts')
+    scripts_dst = File.join(Pod::Config.instance.installation_root, 'Target Support Files', 'scripts')
+    if Dir.exist?(scripts_src)
+      FileUtils.mkdir_p(scripts_dst)
+      Dir.glob(File.join(scripts_src, '*')).each do |entry|
+        FileUtils.cp_r(entry, scripts_dst)
+      end
+    end
   end
 end

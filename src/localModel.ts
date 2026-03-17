@@ -1,5 +1,5 @@
 import { IntervalBlock } from "./types";
-import { requireNativeModule } from "expo-modules-core";
+import { requireOptionalNativeModule } from "expo-modules-core";
 
 type LocalModelModule = {
   ensureModelDownloaded: (url: string) => Promise<string>;
@@ -7,7 +7,11 @@ type LocalModelModule = {
   runInference: (prompt: string) => Promise<string>;
 };
 
-const LocalModel = requireNativeModule("LocalModel") as LocalModelModule;
+const LocalModel = requireOptionalNativeModule("LocalModel") as
+  | LocalModelModule
+  | null;
+
+export const isOnDeviceModuleAvailable = !!LocalModel;
 
 function safeParseBlocks(payload: string): IntervalBlock[] {
   const parsed = JSON.parse(payload);
@@ -19,10 +23,14 @@ function safeParseBlocks(payload: string): IntervalBlock[] {
 }
 
 export async function ensureOnDeviceModel(url: string) {
+  if (!LocalModel) return;
   await LocalModel.ensureModelDownloaded(url);
 }
 
 export async function runOnDeviceParse(input: string): Promise<IntervalBlock[]> {
+  if (!LocalModel) {
+    throw new Error("On-device model is not available in this build.");
+  }
   const json = await LocalModel.runInference(input);
   return safeParseBlocks(json);
 }
